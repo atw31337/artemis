@@ -13,7 +13,7 @@
                                                                             
 
 ################################# Description ###########################################
-# Artemis works by monitoring a specific directory for new files. When a new file      #
+# Artemis works by monitoring a specific directory for new files. When a new file       #
 # is added to the directory, a child process decides which actions are required in      #
 # order to determine whether the file poses any threat to the network. First,           #
 # a hash of the file is created and compared against hashes of files that have          #
@@ -22,16 +22,16 @@
 # email is dispatched. If the hash is not present in the database and the number of     #
 # current scans is below the max concurrent scan threshold, the child will              #
 # begin the scanning process. If the max concurrent scans threshold has already         #
-# been reached, then the file is added to a queue. Artemis will scan the files that    #
+# been reached, then the file is added to a queue. Artemis will scan the files that     #
 # have been queued as worker slots open up and more resources become available.         #
 #########################################################################################
 
 
 #################################### Notes ##############################################
-# Artemis was designed for, and tested on, Ubuntu 16.04 running Security Onion NSM.    #
-# At a minimum, Artemis requires that the Bro NSM be installed. Bro is utilized        #
+# Artemis was designed for, and tested on, Ubuntu 16.04 running Security Onion NSM.     #
+# At a minimum, Artemis requires that the Bro NSM be installed. Bro is utilized         #
 # to extract executable files from the network data stream in order to inspect them     #
-# for known viruses. Artemis "may" be compatible with other flavors of Debian          #
+# for known viruses. Artemis "may" be compatible with other flavors of Debian           #
 # Linux, so long as the systemd service manager is utilized; however, Ubuntu is the     #
 # only flavor that has been tested and is currently supported.                          #
 #                                                                                       #
@@ -43,7 +43,10 @@
 #                                                                                       #
 # For more information about Bro visit:                                                 #
 # https://www.bro.org/                                                                  #
-#											#
+#	                                                                                      #
+# Questions, suggestions, and problem reporting:                                        #
+# https://groups.google.com/forum/#!forum/artemis-ntvm                                  #
+#                                                                                       # 
 #########################################################################################
 
 
