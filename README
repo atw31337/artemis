@@ -1,0 +1,78 @@
+# Artemis Network Traffic Virus Monitor
+# Author: Andrew Withers (atw127@psu.edu, atw31337@gmail.com)
+
+
+ ________  ________  _________  _______   _____ ______   ___  ________      
+|\   __  \|\   __  \|\___   ___\\  ___ \ |\   _ \  _   \|\  \|\   ____\     
+\ \  \|\  \ \  \|\  \|___ \  \_\ \   __/|\ \  \\\__\ \  \ \  \ \  \___|_    
+ \ \   __  \ \   _  _\   \ \  \ \ \  \_|/_\ \  \\|__| \  \ \  \ \_____  \   
+  \ \  \ \  \ \  \\  \|   \ \  \ \ \  \_|\ \ \  \    \ \  \ \  \|____|\  \  
+   \ \__\ \__\ \__\\ _\    \ \__\ \ \_______\ \__\    \ \__\ \__\____\_\  \ 
+    \|__|\|__|\|__|\|__|    \|__|  \|_______|\|__|     \|__|\|__|\_________\
+                                                                \|_________|
+                                                                            
+
+################################# Description ###########################################
+# Artemis works by monitoring a specific directory for new files. When a new file      #
+# is added to the directory, a child process decides which actions are required in      #
+# order to determine whether the file poses any threat to the network. First,           #
+# a hash of the file is created and compared against hashes of files that have          #
+# already been scanned and logged in the database. If the hash matches a file and       #
+# the result of the previous scan indicated that the file was infected, an alert        #
+# email is dispatched. If the hash is not present in the database and the number of     #
+# current scans is below the max concurrent scan threshold, the child will              #
+# begin the scanning process. If the max concurrent scans threshold has already         #
+# been reached, then the file is added to a queue. Artemis will scan the files that    #
+# have been queued as worker slots open up and more resources become available.         #
+#########################################################################################
+
+
+#################################### Notes ##############################################
+# Artemis was designed for, and tested on, Ubuntu 16.04 running Security Onion NSM.    #
+# At a minimum, Artemis requires that the Bro NSM be installed. Bro is utilized        #
+# to extract executable files from the network data stream in order to inspect them     #
+# for known viruses. Artemis "may" be compatible with other flavors of Debian          #
+# Linux, so long as the systemd service manager is utilized; however, Ubuntu is the     #
+# only flavor that has been tested and is currently supported.                          #
+#                                                                                       #
+# Ubuntu 16.04 downloads:                                                               #  
+# http://releases.ubuntu.com/xenial/                                                    #
+#                                                                                       # 
+# For more information about Security Onion visit:                                      #
+# https://securityonion.net/                                                            #
+#                                                                                       #
+# For more information about Bro visit:                                                 #
+# https://www.bro.org/                                                                  #
+#											#
+#########################################################################################
+
+
+########################## Installation instructions ######################################
+
+# Extract Artemis.tar.gz
+
+tar -zvxf artemis.tar.gz
+
+# Enter the Artemis directory and run the Artemis install script
+
+cd artemis
+sudo ./artemis-installer
+
+# or create an answer file using the install.conf template in the artemis/conf/ directory
+# and run the installer in automated mode
+
+sudo ./artemis-installer -f <answer file>
+
+Example: sudo ./artemis-isntaller -f ./conf/install.conf
+
+########################## Uninstall Instructions #########################################
+
+# Run installer in uninstall mode and follow the prompts
+
+sudo ./artemis-installer -u
+
+# exit
+
+ 
+
+
