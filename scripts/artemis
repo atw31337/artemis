@@ -51,7 +51,7 @@ EOF
 LogsEntry() {
 SIZE=$(du -b "$1" | awk '{print $1}')
 FILETYPE=$(echo "$3" | cut -d'.' -f2)
-LOGSID=$(mysql --defaults-file=/etc/mysql/debian.cnf -u root -D artemis -BN -e "INSERT INTO Logs (DateTime, Hash, FileName, FileSize, FileType) \
+LOGSID=$(mysql --defaults-file=/etc/mysql/debian.cnf -D artemis -BN -e "INSERT INTO Logs (DateTime, Hash, FileName, FileSize, FileType) \
 VALUES ('$(echo "$(date +%Y-%m-%d) $(date +%T)")', '$2', '$3', $SIZE, '$FILETYPE'); SELECT LAST_INSERT_ID();")
 }
 
@@ -63,9 +63,9 @@ printf "SHA256: %s\n" "$HASH" >> "$TFILE"
 if [[ -n $IDIR ]]; then
 	 printf "A copy of the infected file(s) can be located in %s\n" "$IDIR" >> "$TFILE"
 fi
-mysql --defaults-file=/etc/mysql/debian.cnf -u root -D artemis -BN -e "SELECT FileName, Source, CONCAT('->') AS Arrow, Destination FROM Logs WHERE EntryID=$LOGSID;" >> "$TFILE"
+mysql --defaults-file=/etc/mysql/debian.cnf -D artemis -BN -e "SELECT FileName, Source, CONCAT('->') AS Arrow, Destination FROM Logs WHERE EntryID=$LOGSID;" >> "$TFILE"
 if [[ -e /opt/artemis/cache/$HASH ]]; then
-	mysql --defaults-file=/etc/mysql/debian.cnf -u root -D artemis -BN -e "SELECT FileName, Source, CONCAT('->') AS Arrow, Destination FROM Logs WHERE EntryID IN ($IDLIST);" >> "$TFILE"
+	mysql --defaults-file=/etc/mysql/debian.cnf -D artemis -BN -e "SELECT FileName, Source, CONCAT('->') AS Arrow, Destination FROM Logs WHERE EntryID IN ($IDLIST);" >> "$TFILE"
 fi
 sendmail -vt < "$TFILE"
 rm -f "$TFILE"
@@ -149,10 +149,10 @@ if [[ -e $1 ]] && [[ -s $1 ]]; then    # Check that file length is nonzero
 	HASH=$(sha256sum "$1" | awk '{ print $1 }')
 	FILENAME=$(echo "$1" | rev | cut -d '/' -f1 | rev)      # File name only
 	LogsEntry "$1" "$HASH" "$FILENAME"
-	HASHID=$(mysql --defaults-file=/etc/mysql/debian.cnf -u root -D artemis -BN -e "SELECT HashID FROM Cache WHERE Hash='$HASH' LIMIT 1;")
+	HASHID=$(mysql --defaults-file=/etc/mysql/debian.cnf -D artemis -BN -e "SELECT HashID FROM Cache WHERE Hash='$HASH' LIMIT 1;")
 	if grep -qw $HASH $LISTLOC/blacklist; then	# Compare the hash against the blacklist
 		getSrcDst
-		mysql --defaults-file=/etc/mysql/debian.cnf -u root -D artemis -e "UPDATE Logs SET Scanned=0, Queued=0, Result=4, Source='$SOURCE', Desintation='$DEST' WHERE EntryID=$LOGSID;"
+		mysql --defaults-file=/etc/mysql/debian.cnf -D artemis -e "UPDATE Logs SET Scanned=0, Queued=0, Result=4, Source='$SOURCE', Desintation='$DEST' WHERE EntryID=$LOGSID;"
 		if [[ -n $IDIR ]]; then
                 	mv "$DIR$FILENAME" "$IDIR$FILENAME"
                 	chmod 600 "$IDIR$FILENAME"
@@ -160,11 +160,11 @@ if [[ -e $1 ]] && [[ -s $1 ]]; then    # Check that file length is nonzero
 		sendAlert
 	elif grep -qw $HASH $LISTLOC/whitelist; then   # Compare the hash against the whitelist
                 getSrcDst
-                mysql --defaults-file=/etc/mysql/debian.cnf -u root -D artemis -e "UPDATE Logs SET Scanned=0, Queued=0, Result=3, Source='$SOURCE', Destination='$DEST' WHERE EntryID=$LOGSID;"
+                mysql --defaults-file=/etc/mysql/debian.cnf -D artemis -e "UPDATE Logs SET Scanned=0, Queued=0, Result=3, Source='$SOURCE', Destination='$DEST' WHERE EntryID=$LOGSID;"
 	elif [[ -z $HASHID ]]; then	# Hash does not exist in the Cache Table
-		if [[ $(pgrep -c clamscan) -lt $MAXPROC ]] && [[ $(mysql --defaults-file=/etc/mysql/debian.cnf -u root -D artemis -BN -e "SELECT COUNT(*) FROM Queue;") -eq 0  ]]; then
+		if [[ $(pgrep -c clamscan) -lt $MAXPROC ]] && [[ $(mysql --defaults-file=/etc/mysql/debian.cnf -D artemis -BN -e "SELECT COUNT(*) FROM Queue;") -eq 0  ]]; then
 			# Worker slots are available and the queue is empty. The file can be scanned immediately.
-			HASHID=$(mysql --defaults-file=/etc/mysql/debian.cnf -u root -D artemis -BN -e "INSERT INTO Cache (Hash, Hits, TimeStamp) VALUES ('$HASH', 1, $(date +%s%N)); SELECT LAST_INSERT_ID();")
+			HASHID=$(mysql --defaults-file=/etc/mysql/debian.cnf -D artemis -BN -e "INSERT INTO Cache (Hash, Hits, TimeStamp) VALUES ('$HASH', 1, $(date +%s%N)); SELECT LAST_INSERT_ID();")
 			SCANNED=1
 			QUEUED=0
 			TLOG=$(mktemp -p /tmp/artemis/)  # Temporary file for log output
@@ -176,7 +176,7 @@ if [[ -e $1 ]] && [[ -s $1 ]]; then    # Check that file length is nonzero
 			SCANTIME=$(grep Time "$TLOG" | awk '{print $2}')
 			getSrcDst
 			# Update the Logs table with the data from the scanned file
-                        mysql --defaults-file=/etc/mysql/debian.cnf -u root -D artemis -e "UPDATE Logs SET Scanned=$SCANNED, Queued=$QUEUED, Result=$RESULT, ScanTime=$SCANTIME, \
+                        mysql --defaults-file=/etc/mysql/debian.cnf -D artemis -e "UPDATE Logs SET Scanned=$SCANNED, Queued=$QUEUED, Result=$RESULT, ScanTime=$SCANTIME, \
                         Source='$SOURCE', Destination='$DEST' WHERE EntryID=$LOGSID;"
 			# If a duplicate hash file exists add the result to the log entries contained in the file
 			if [[ -e /opt/artemis/cache/$HASH ]]; then
@@ -191,9 +191,9 @@ if [[ -e $1 ]] && [[ -s $1 ]]; then    # Check that file length is nonzero
                                                 	IDLIST+=",$LINE"
                                         	fi
                                 	done </opt/artemis/cache/$HASH
-                                	mysql --defaults-file=/etc/mysql/debian.cnf -u root -D artemis -e "UPDATE Logs SET Result=$RESULT WHERE EntryID IN ($IDLIST);"
+                                	mysql --defaults-file=/etc/mysql/debian.cnf -D artemis -e "UPDATE Logs SET Result=$RESULT WHERE EntryID IN ($IDLIST);"
                         	else
-                                	mysql --defaults-file=/etc/mysql/debian.cnf -u root -D artemis -e "UPDATE Logs SET Result=$RESULT WHERE EntryID=$(cat /opt/artemis/cache/$HASH);"
+                                	mysql --defaults-file=/etc/mysql/debian.cnf -D artemis -e "UPDATE Logs SET Result=$RESULT WHERE EntryID=$(cat /opt/artemis/cache/$HASH);"
                         	fi
 			fi
 			if [[ $RESULT -eq 1 ]]; then	# The file is infected
@@ -202,7 +202,7 @@ if [[ -e $1 ]] && [[ -s $1 ]]; then    # Check that file length is nonzero
 					if [[ -e /opt/artemis/cache/$HASH ]]; then
 						# Move each copy of the infected file to the appropriate directory
 						while read LINE; do
-							IFILE=$(mysql --defaults-file=/etc/mysql/debian.cnf -u root -D artemis -BN -e "SELECT FileName FROM Logs WHERE EntryID=$$LINE;")
+							IFILE=$(mysql --defaults-file=/etc/mysql/debian.cnf -D artemis -BN -e "SELECT FileName FROM Logs WHERE EntryID=$$LINE;")
 							mv "$DIR$IFILE" "$IDIR$IFILE"
 							chmod 600 "$IDIR$IFILE"
 						done </opt/artemis/cache/$HASH
@@ -220,41 +220,41 @@ if [[ -e $1 ]] && [[ -s $1 ]]; then    # Check that file length is nonzero
 			rm  "$TLOG"
 			# Cache table maintenance
 			# Remove any existing duplicate hashes
-			DUPHASH=$(mysql --defaults-file=/etc/mysql/debian.cnf -u root -D artemis -BN -e "SELECT Hash FROM Cache GROUP BY Hash HAVING COUNT(*) > 1 LIMIT 1;")
+			DUPHASH=$(mysql --defaults-file=/etc/mysql/debian.cnf -D artemis -BN -e "SELECT Hash FROM Cache GROUP BY Hash HAVING COUNT(*) > 1 LIMIT 1;")
 			while [[ -n $DUPHASH ]]; do
-				DEL=$(mysql --defaults-file=/etc/mysql/debian.cnf -u root -D artemis -BN -e "SELECT HashID FROM Cache WHERE Hash='$DUPHASH' LIMIT 1;")
-				mysql --defaults-file=/etc/mysql/debian.cnf -u root -D artemis -e "DELETE FROM Cache WHERE HashID=$DEL;"
-				DUPHASH=$(mysql --defaults-file=/etc/mysql/debian.cnf -u root -D artemis -BN -e "SELECT Hash FROM Cache GROUP BY Hash HAVING COUNT(*) > 1 LIMIT 1;")
+				DEL=$(mysql --defaults-file=/etc/mysql/debian.cnf -D artemis -BN -e "SELECT HashID FROM Cache WHERE Hash='$DUPHASH' LIMIT 1;")
+				mysql --defaults-file=/etc/mysql/debian.cnf -D artemis -e "DELETE FROM Cache WHERE HashID=$DEL;"
+				DUPHASH=$(mysql --defaults-file=/etc/mysql/debian.cnf -D artemis -BN -e "SELECT Hash FROM Cache GROUP BY Hash HAVING COUNT(*) > 1 LIMIT 1;")
 			done
 			# Remove entries that contain an error result.
-			mysql --defaults-file=/etc/mysql/debian.cnf -u root -D artemis -e "DELETE FROM Cache WHERE Result=2;"
+			mysql --defaults-file=/etc/mysql/debian.cnf -D artemis -e "DELETE FROM Cache WHERE Result=2;"
 			# Remove stale entries with a NULL result
 			# STALE=$(( $(date +%s%N) - 60000000000 ))
 			# If the cache is larger than the max cache size, delete hashes based on the greatest time interval since last hit
-			while [[ $(mysql --defaults-file=/etc/mysql/debian.cnf -u root -D artemis -BN -e "SELECT COUNT(*) FROM Cache;") -gt $MAXHASH ]]; do
-				DEL=$(mysql --defaults-file=/etc/mysql/debian.cnf -u root -D artemis -BN -e "SELECT HashID FROM Cache ORDER BY TimeStamp ASC LIMIT 1;")
-				mysql --defaults-file=/etc/mysql/debian.cnf -u root -D artemis -e "DELETE FROM Cache WHERE HashID=$DEL;"
+			while [[ $(mysql --defaults-file=/etc/mysql/debian.cnf -D artemis -BN -e "SELECT COUNT(*) FROM Cache;") -gt $MAXHASH ]]; do
+				DEL=$(mysql --defaults-file=/etc/mysql/debian.cnf -D artemis -BN -e "SELECT HashID FROM Cache ORDER BY TimeStamp ASC LIMIT 1;")
+				mysql --defaults-file=/etc/mysql/debian.cnf -D artemis -e "DELETE FROM Cache WHERE HashID=$DEL;"
 			done
 		else	# Hash does not exist in the Cache table but no worker slots are available or the queue contains files
 			QUEUED=1
 			ENTRYTIME="$(date +%s).$(date +%N | head -c3)"
-			mysql --defaults-file=/etc/mysql/debian.cnf -u root -D artemis -e "INSERT INTO Queue (FileName, TimeStamp, LogsID, EntryTime) VALUES ('$1', '$TSTAMP', $LOGSID, $ENTRYTIME);"
-			mysql --defaults-file=/etc/mysql/debian.cnf -u root -D artemis -e "UPDATE Logs SET Queued=$QUEUED WHERE EntryID=$LOGSID;"
+			mysql --defaults-file=/etc/mysql/debian.cnf -D artemis -e "INSERT INTO Queue (FileName, TimeStamp, LogsID, EntryTime) VALUES ('$1', '$TSTAMP', $LOGSID, $ENTRYTIME);"
+			mysql --defaults-file=/etc/mysql/debian.cnf -D artemis -e "UPDATE Logs SET Queued=$QUEUED WHERE EntryID=$LOGSID;"
 		fi
 	else	# Hash is present in the Cache table
 		SCANNED=0
 		QUEUED=0
 		getSrcDst
-		RESULT=$(mysql --defaults-file=/etc/mysql/debian.cnf -u root -D artemis -BN -e "SELECT Result FROM Cache WHERE HashID=$HASHID;")
+		RESULT=$(mysql --defaults-file=/etc/mysql/debian.cnf -D artemis -BN -e "SELECT Result FROM Cache WHERE HashID=$HASHID;")
 		# Update the Logs and Cache table entries
-		mysql --defaults-file=/etc/mysql/debian.cnf -u root -D artemis -e "UPDATE Logs SET Scanned=$SCANNED, Queued=$QUEUED, Source='$SOURCE', Destination='$DEST' WHERE EntryID=$LOGSID;"
-		mysql --defaults-file=/etc/mysql/debian.cnf -u root -D artemis -e "UPDATE Cache SET Hits=Hits+1, TimeStamp=$(date +%s%N) WHERE HashID=$HASHID;"
+		mysql --defaults-file=/etc/mysql/debian.cnf -D artemis -e "UPDATE Logs SET Scanned=$SCANNED, Queued=$QUEUED, Source='$SOURCE', Destination='$DEST' WHERE EntryID=$LOGSID;"
+		mysql --defaults-file=/etc/mysql/debian.cnf -D artemis -e "UPDATE Cache SET Hits=Hits+1, TimeStamp=$(date +%s%N) WHERE HashID=$HASHID;"
 		if [[ $RESULT == "NULL" ]]; then
 			echo $LOGSID >> /opt/artemis/cache/$HASH
 		else	# Result is present in the Cache table
 
 			# Update the result in the Logs table
-                        mysql --defaults-file=/etc/mysql/debian.cnf -u root -D artemis -e "UPDATE Logs SET Result=$RESULT WHERE EntryID=$LOGSID;"
+                        mysql --defaults-file=/etc/mysql/debian.cnf -D artemis -e "UPDATE Logs SET Result=$RESULT WHERE EntryID=$LOGSID;"
 			if [[ $RESULT -eq 1 ]]; then
 				if [[ -n $IDIR ]]; then
 					mv "$DIR$FILENAME" "$IDIR$FILENAME"
@@ -299,7 +299,7 @@ while [[ $OPTIND -lt $# ]];do
 		exit 0
 		;;
 	f)
-		mysql --defaults-file=/etc/mysql/debian.cnf -u root -D artemis -e "TRUNCATE TABLE Cache;" > /dev/null
+		mysql --defaults-file=/etc/mysql/debian.cnf -D artemis -e "TRUNCATE TABLE Cache;" > /dev/null
 		echo "Artemis: Cache has been flushed"
 		exit 0
 		;;
@@ -387,9 +387,9 @@ pkill -9 clamscan
 # Cleanup
 umount /opt/artemis/cache/
 rm -rf /opt/artemis/cache/
-mysql --defaults-file=/etc/mysql/debian.cnf -u root -D artemis -e "DELETE FROM Logs WHERE Result IS NULL;"
-mysql --defaults-file=/etc/mysql/debian.cnf -u root -D artemis -e "DELETE FROM Cache WHERE Result IS NULL;"
-mysql --defaults-file=/etc/mysql/debian.cnf -u root -D artemis -e "TRUNCATE TABLE Queue;"
+mysql --defaults-file=/etc/mysql/debian.cnf -D artemis -e "DELETE FROM Logs WHERE Result IS NULL;"
+mysql --defaults-file=/etc/mysql/debian.cnf -D artemis -e "DELETE FROM Cache WHERE Result IS NULL;"
+mysql --defaults-file=/etc/mysql/debian.cnf -D artemis -e "TRUNCATE TABLE Queue;"
 if [[ -d /tmp/artemis/ ]]; then
 	rm -rf /tmp/artemis/
 fi

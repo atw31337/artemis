@@ -19,6 +19,6 @@
 # Author: Andrew Withers (atw127@psu.edu, atw31337@gmail.com)
 
 DAYSTOKEEP=$(grep LOGSDATA /etc/artemis.conf | cut -d"=" -f2)
-CUTOFF=$(mysql --defaults-file=/etc/mysql/debian.cnf -u root -BN -e "SELECT SUBTIME (SYSDATE(),'$DAYSTOKEEP 0:0:0');")
-mysql --defaults-file=/etc/mysql/debian.cnf -u root -D artemis -e "DELETE FROM Logs WHERE DateTime < '$CUTOFF';"
+CUTOFF=$(mysql --defaults-file=/etc/mysql/debian.cnf -BN -e "SELECT SUBTIME (SYSDATE(),'$DAYSTOKEEP 0:0:0');")
+mysql --defaults-file=/etc/mysql/debian.cnf -D artemis -e "DELETE FROM Logs WHERE DateTime < '$CUTOFF';"
 
