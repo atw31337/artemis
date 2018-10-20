@@ -50,7 +50,7 @@
 #########################################################################################
 
 
-########################## Installation instructions ######################################
+########################### Installation instructions ######################################
 
 # Extract Artemis.tar.gz
 
@@ -68,11 +68,75 @@ sudo ./artemis-installer -f <answer file>
 
 Example: sudo ./artemis-isntaller -f ./conf/install.conf
 
-########################## Uninstall Instructions #########################################
+
+########################### Uninstall Instructions #########################################
 
 # Run installer in uninstall mode and follow the prompts
 
 sudo ./artemis-installer -u
+
+
+#################################### Usage #################################################
+
+Artemis Network Traffic Virus Monitor
+Usage: artemis [OPTION]
+
+        Options:
+
+                -h                      This message
+                -v                      Print version information
+                -f                      Flush the hash cache
+                -w <SHA256 Hash>        Add a SHA256 hash to the whitelist
+                -b <SHA256 Hash>        Add a SHA256 hash to the blacklist
+
+
+############################### Auxiliary Scripts ###########################################
+
+Tracks - Artemis log interface
+Usage: tracks [Time OPTION]...[Query OPTION]
+If no Time option is selected or if it is placed after the Query option, the time period will default to the last 24 hours
+
+        Time Period Options:
+                -D <YYYY-MM-HH>         Specific date
+                -M <YYYY-MM>            Specific month
+                -Y <YYYY>               Specific year
+                -H <HH>                 Specific hour of current day
+                -d <n>                  Last n number of days
+                -w <n>                  Last n number of weeks
+                -m <n>                  Last n number of months
+                -y <n>                  Last n number of years
+                -r <n>                  Last n number of hours
+                -i <n>                  Last n number of minutes
+                -R <Start> <End>        Specific start and end Date/Time in YYYY-MM-DD HH:MM:SS format
+                -a                      all
+
+        Query options:
+                -F <SHA256 Hash>                Query file(s) by hash
+                -S <Source IP>                  Query file(s) by source IP address
+                -T <Destination IP>             Query file(s) by destination IP address
+                -I <Source or Destination IP>   Query files(s) by Source or Destination IP address
+                -f <Filename>                   Query file by filename
+
+        Additional option:
+                -p                              Purge all log data
+
+
+arteStat - Artemis statistical report generator
+Usage: arteStat [OPTION]...
+
+        Report Period Options:
+                -D <YYYY-MM-HH>         Specific date
+                -M <YYYY-MM>            Specific month
+                -Y <YYYY>               Specific year
+                -H <HH>                 Specific hour of current day
+                -d <n>                  Last n number of days
+                -w <n>                  Last n number of weeks
+                -m <n>                  Last n number of months
+                -y <n>                  Last n number of years
+                -r <n>                  Last n number of hours
+                -i <n>                  Last n number of minutes
+                -R <Start> <End>        Specific start and end Date/Time in YYYY-MM-DD HH:MM:SS format
+
 
 # exit
 
