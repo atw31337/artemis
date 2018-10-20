@@ -295,7 +295,7 @@ while [[ $OPTIND -lt $# ]];do
 		exit o
 		;;
 	v)
-		echo "Artemis Network Virus Monitor v$(grep VERSION /etc/artemis.conf | cut -d'=' -f2)"
+		echo "Artemis Network Traffic Virus Monitor v$(grep VERSION /etc/artemis.conf | cut -d'=' -f2)"
 		exit 0
 		;;
 	f)
