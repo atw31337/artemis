@@ -30,7 +30,7 @@ stop)
 			sleep 0.1
 		fi
 	done
-	while [[ $(pgrep -c artemis) -gt 1 ]]; do
+	while ps aux | grep -q '/artemis$'; do
 		sleep 0.5
 	done
 	;;
