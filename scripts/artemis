@@ -286,13 +286,9 @@ fi
 while [[ $OPTIND -lt $# ]];do
 	parsOpts "$@" "h,help,v,f,w:,b:"
 	case $OPT in
-	h)
+	h|help)
 		usage
 		exit 0
-		;;
-	help)
-		usage
-		exit o
 		;;
 	v)
 		echo "Artemis Network Traffic Virus Monitor v$(grep VERSION /etc/artemis.conf | cut -d'=' -f2)"

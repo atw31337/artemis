@@ -56,14 +56,10 @@ START=$(mysql --defaults-file=/etc/mysql/debian.cnf -BN -e "SELECT SUBDATE('$END
 while [[ $OPTIND -lt $# ]]; do
 	parsOpts "$@" "h,help,D:,M:,Y:,H:,d:,w:,m:,y:,r:,i:,R:4"
 	case $OPT in
-	h)
+	h|help)
 		usage
 		exit 0
 		;;
-	help)
-		usage
-                exit 0
-                ;;
 	D)
 		START="$OPTARG 00:00:01"
 		END="$OPTARG 23:59:59"
