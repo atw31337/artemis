@@ -172,7 +172,7 @@ if [[ -e $1 ]] && [[ -s $1 ]]; then    # Check that file length is nonzero
 			clamscan "$1" >> "$TLOG"
 			RESULT=$?
 			# Add the result of the scan to the Cache table
-			mysql --defaults-file=/etc/mysql/debian.cnf -u  root -D artemis -e "UPDATE Cache SET Result=$RESULT WHERE HashID=$HASHID;"
+			mysql --defaults-file=/etc/mysql/debian.cnf -D artemis -e "UPDATE Cache SET Result=$RESULT WHERE HashID=$HASHID;"
 			SCANTIME=$(grep Time "$TLOG" | awk '{print $2}')
 			getSrcDst
 			# Update the Logs table with the data from the scanned file
