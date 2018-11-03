@@ -120,7 +120,7 @@ if [[ -e $1 ]]; then
 	FILENAME=$(echo "$1" | rev | cut -d'/' -f1 | rev) # File name only
 	EXITTIME="$(date +%s).$(date +%N | head -c3)"
 	QTIME=$(echo "scale=3; $EXITTIME - $ENTRYTIME" | bc)
-	mysql  -D artemis -e "UPDATE Logs SET QTime=$QTIME WHERE EntryID=$LOGSID;"
+	mysql --defaults-file=/etc/mysql/debian.cnf -D artemis -e "UPDATE Logs SET QTime=$QTIME WHERE EntryID=$LOGSID;"
 	HASHID=$(mysql --defaults-file=/etc/mysql/debian.cnf -D artemis -BN -e "SELECT HashID FROM Cache WHERE Hash='$HASH' LIMIT 1;")
 	if [[ -z $HASHID ]]; then	# Hash does not exist in the Cache Table
 		HASHID=$(mysql --defaults-file=/etc/mysql/debian.cnf -D artemis -BN -e "INSERT INTO Cache (Hash, Hits, TimeStamp) VALUES ('$HASH', 1, $(date +%s%N)); SELECT LAST_INSERT_ID();")
