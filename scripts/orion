@@ -117,7 +117,7 @@ fi
 filescan() {
 if [[ -e $1 ]]; then
 	HASH=$(sha256sum "$1" | awk '{ print $1 }')
-	FILENAME=$(echo "$1" | rev | cut -d'/' -f1 | rev) # File name only
+	FILENAME=$(basename "$1") # File name only
 	EXITTIME="$(date +%s).$(date +%N | head -c3)"
 	QTIME=$(echo "scale=3; $EXITTIME - $ENTRYTIME" | bc)
 	mysql --defaults-file=/etc/mysql/debian.cnf -D artemis -e "UPDATE Logs SET QTime=$QTIME WHERE EntryID=$LOGSID;"

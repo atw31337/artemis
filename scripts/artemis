@@ -147,7 +147,7 @@ if [[ -e $1 ]] && [[ -s $1 ]]; then    # Check that file length is nonzero
 	TSTAMP=$(date)
 	file_integrity_chk $1
 	HASH=$(sha256sum "$1" | awk '{ print $1 }')
-	FILENAME=$(echo "$1" | rev | cut -d '/' -f1 | rev)      # File name only
+	FILENAME=$(basename "$1")      # File name only
 	LogsEntry "$1" "$HASH" "$FILENAME"
 	HASHID=$(mysql --defaults-file=/etc/mysql/debian.cnf -D artemis -BN -e "SELECT HashID FROM Cache WHERE Hash='$HASH' LIMIT 1;")
 	if grep -qw $HASH $LISTLOC/blacklist; then	# Compare the hash against the blacklist
