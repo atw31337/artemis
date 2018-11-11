@@ -48,8 +48,7 @@ done
 
 autoStop() {
 service artemis stop && pkill -9 clamscan
-printf "%s: " "$(date)"
-printf "Low memory detected!\nEmergency stop sequence activated." >> /var/log/artemis.err
+printf "%s: Low memory detected! Emergency stop sequence activated." "$(date)" >> /var/log/artemis.err
 exit
 }
 
