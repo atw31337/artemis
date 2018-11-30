@@ -52,10 +52,6 @@
 
 ########################### Installation instructions ######################################
 
-# Extract Artemis.tar.gz
-
-tar -zvxf artemis.tar.gz
-
 # Enter the Artemis directory and run the Artemis install script
 
 cd artemis
