@@ -1,7 +1,7 @@
 #!/bin/bash
 # Title: artemis-installer
 # Description: Installation script for Artemis Network Traffic Virus Monitor
-# Version: 1.00
+# Version: 1.01
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -18,7 +18,7 @@
 #
 # Author: Andrew Withers (atw127@psu.edu, atw31337@gmail.com)
 
-VERSION=1.00
+VERSION=1.01
 
 genConf ()
 {
@@ -391,7 +391,7 @@ if [[ -z $( mysql --defaults-file=/etc/mysql/debian.cnf -BN -e "SHOW DATABASES L
 	mysql --defaults-file=/etc/mysql/debian.cnf -D artemis -e "CREATE TABLE Logs (EntryID int NOT NULL AUTO_INCREMENT, DateTime DATETIME NOT NULL, Hash char(64) NOT NULL, \
 		Scanned tinyint(1), Queued tinyint(1), Result tinyint(1), FileName varchar(255) NOT NULL, FileSize bigint NOT NULL, ScanTime float, QTime double, \
 		FileType varchar(5) NOT NULL, Source varchar(255), Destination varchar(255), PRIMARY KEY (EntryID)) ENGINE=InnoDB;"
-	mysql --defaults-file=/etc/mysql/debian.cnf -D artemis -e "CREATE TABLE Queue (FileID int NOT NULL AUTO_INCREMENT, FileName varchar(255) NOT NULL, TimeStamp varchar(255) NOT NULL, \
+	mysql --defaults-file=/etc/mysql/debian.cnf -D artemis -e "CREATE TABLE Queue (FileID int NOT NULL AUTO_INCREMENT, FileName varchar(255) NOT NULL, TimeStamp DATETIME NOT NULL, \
 		LogsID int NOT NULL, EntryTime double NOT NULL, PRIMARY KEY (FileID)) ENGINE=InnoDB;"
 fi
 
