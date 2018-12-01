@@ -183,7 +183,19 @@ while getopts ":huf:" OPT; do
 		fi
 		;;
 	u)
-		uninstall
+		if [[ $(grep VERSION /etc/artemis.conf | cut -d'=' -f2) == "$VERSION" ]]; then
+                        uninstall
+                elif [[ -e /opt/artemis/artemis-setup ]] && [[ $(grep Version /opt/artemis/artemis-setup | head -n1 | cut -d' ' -f3) \
+                == $(grep VERSION /etc/artemis.conf | cut -d'=' -f2) ]]; then
+                        /opt/artemis/artemis-setup -u
+                else
+                        read -p "Uninstaller version mismatch. Would you like to proceed with uninstallation anyway? [y/N]: " SELECT
+                        if [[ $SELECT == 'y' ]] || [[ $SELECT == 'Y' ]]; then
+                                uninstall
+                        else
+                                echo "Uninstallion aborted"
+                        fi
+                fi
 		exit 0
 		;;
 	\?)
@@ -219,6 +231,13 @@ if [[ $MODE -eq 1 ]];then
 	fi
 fi
 
+echo "Checking version information..."
+apt-get update -qq
+# bc is required to check version information
+if ! dpkg --get-selections | grep -v deinstall | grep -wq bc; then
+        apt-get -y install bc > /dev/null 2>&1
+fi
+
 # Check for previous version
 if [[ -e /opt/artemis/artemis-installer ]]; then
 	# Verify that the old install script version corresponds to the version of Artemis installed and that it is less than the version being installed
@@ -236,12 +255,18 @@ if [[ -e /opt/artemis/artemis-installer ]]; then
 		if  [[ $SELECT != "y" ]] && [[ $SELECT != "Y" ]]; then
 			exit 0
 		fi
-	else
+	elif (( $(echo "$(grep VERSION /etc/artemis.conf | cut -d'=' -f2) > $VERSION" | bc -l) )); then
 		read -p "A newer version of Artemis is already installed. Would you like to remove it and install this version? [y/N]: " SELECT
 		if  [[ $SELECT == "y" ]] || [[ $SELECT == "Y" ]]; then
 			/opt/artemis/artemis-installer -u
 		else
 			exit 0
+		fi
+	else
+		echo "A different version of Artemis has been detected; however, no corresponding version of the install/uninstall script can be found."
+		read -p  "Would you like to attempt to uninstall the previous version before continuing? [y/N]: " SELECT
+		if [[ $SELECT == "y" ]] || [[ $SELECT == "Y" ]]; then
+			/opt/artemis/artemis-installer -u
 		fi
 	fi
 fi
@@ -256,7 +281,6 @@ echo "Installing Artemis..."
 
 #Install prerequisite packages if necessary
 echo "Checking prerequisites..."
-apt-get update -qq
 if ! dpkg --get-selections | grep -v deinstall | grep -q mlocate; then
 	CLEAN=1
 	apt-get -y install mlocate > /dev/null 2>&1
@@ -291,10 +315,6 @@ case $(locate extract.bro | grep -vc ./conf/extract.bro) in
 		;;
 
 esac
-if ! dpkg --get-selections | grep -v deinstall | grep -wq bc; then
-	echo "Installing bc..."
-	apt-get -y install bc > /dev/null 2>&1
-fi
 if ! dpkg --get-selections | grep -v deinstall | grep -q postfix; then
 	if [[ $MODE -eq 0 ]]; then
 		while [[ -z $MYDOMAIN ]]; do
