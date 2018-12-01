@@ -264,7 +264,7 @@ fi
 
 # Search for extract.bro
 updatedb
-case $(locate extract.bro | grep -vc artemis/conf/extract.bro) in
+case $(locate extract.bro | grep -vc ./conf/extract.bro) in
 	0)
 		echo "Unable to locate extract.bro file. Verify that Bro is installed and properly configured to extract files."
 		echo "Aborting installation..."
@@ -274,10 +274,10 @@ case $(locate extract.bro | grep -vc artemis/conf/extract.bro) in
 		exit 1
 		;;
 	1)
-		EXTLOC=$(locate extract.bro | grep -v artemis/conf/extract.bro)
+		EXTLOC=$(locate extract.bro | grep -v ./conf/extract.bro)
 		;;
 	*)
-		LIST=($(locate extract.bro | grep -v artemis/conf/extract.bro))
+		LIST=($(locate extract.bro | grep -v ./conf/extract.bro))
 		printf "Mulitple instances of extract.bro were found: \n"
 		for ((i=0; i<"${#LIST[@]}"; i++)); do
 			echo "$((i+1))) ${LIST[$i]}"
