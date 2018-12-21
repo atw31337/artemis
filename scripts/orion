@@ -118,8 +118,8 @@ if [[ -z $SOURCE ]] || [[ -z $DEST ]]; then
 fi
 }
 
-filescan() {
-if [[ -e $1 ]]; then
+filescan()
+{
 	HASH=$(sha256sum "$1" | awk '{ print $1 }')
 	FILENAME=$(basename "$1") # File name only
 	EXITTIME="$(date +%s).$(date +%N | head -c3)"
@@ -222,7 +222,6 @@ if [[ -e $1 ]]; then
 			fi
 		fi
 	fi
-fi
 }
 
 # Check that the configuration file exists

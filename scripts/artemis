@@ -155,8 +155,8 @@ fi
 
 
 
-prescan() {
-if [[ -e $1 ]] && [[ -s $1 ]]; then    # Check that file length is nonzero
+prescan()
+{
 	TSTAMP="$(date +%Y-%m-%d) $(date +%T)"
 	file_integrity_chk "$1"
 	HASH=$(sha256sum "$1" | awk '{ print $1 }')
@@ -202,7 +202,6 @@ if [[ -e $1 ]] && [[ -s $1 ]]; then    # Check that file length is nonzero
 			fi
 		fi
 	fi
-fi
 }
 
 exec 2> /var/log/artemis.err
