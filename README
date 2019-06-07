@@ -1,3 +1,10 @@
+# This project has been deprecated by the artemis-distributed project. It may still work 
+# properly but lacks much of the functionality included in the newer version.
+# It has also been quite some time since I tested the scripts in this project. Though I 
+# am no longer supporting this project, feel free to contact me if you have any specific
+# questions or issues.  
+
+
 # Artemis Network Traffic Virus Monitor
 # Author: Andrew Withers (atw31337@gmail.com)
 
