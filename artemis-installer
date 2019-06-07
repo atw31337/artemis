@@ -105,6 +105,7 @@ uninstall ()
 	read -p 'Would you like to uninstall clamav? [y/N]: ' ANSWER
 	if [[ $ANSWER == 'y' ]]; then
 		echo "Removing clamav..."
+		service clamav-daemon stop
 		apt-get -y purge "$(dpkg --get-selections | grep -v deinstall | awk '{print $1}' | grep clamav)" > /dev/null 2>&1
 	else
 		echo "clamav will not be uninstalled."
@@ -348,11 +349,10 @@ if ! dpkg --get-selections | grep -v deinstall | grep -q inotify-tools; then
 	echo "Installing inotify-tools..."
 	apt-get -y install inotify-tools > /dev/null 2>&1
 fi
-if ! dpkg --get-selections | grep -v deinstall | awk '{print $1}' | grep -xq clamav; then
+if ! dpkg --get-selections | grep -v deinstall | awk '{print $1}' | grep -xq clamav-daemon; then
 	echo "Installing clamav..."
-	apt-get -y install clamav > /dev/null 2>&1
-	echo "Fetching a fresh clam..."
-	freshclam > /dev/null 2>&1
+	apt-get -y install clamav-daemon > /dev/null 2>&1
+	service clamav-freshclam restart
 fi
 if ! dpkg --get-selections | grep -v deinstall | awk '{print $1}' | grep -xq mysql-server; then
 	echo "Installing mysql-server..."
@@ -472,6 +472,9 @@ fi
 
 echo Restarting Bro...
 so-bro-restart > /dev/null 2>&1
+
+echo Starting clamav-daemon...
+service clamav-daemon restart
 
 echo "Installation Complete"
 echo "Starting Artemis..."
